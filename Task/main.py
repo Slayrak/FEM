@@ -14,23 +14,108 @@ from Functions import DPSIXYZ
 from Functions import to_global
 from Functions import fixate_side
 
-from numpy import linalg
-
 from visualisation import get_all_outer_cubes
 from visualisation import get_cubes_side_vertices
 
-from generators import generate27GaussianNodes
 from generators import getJacobian
 from generators import generate_c_consts
 from generators import generate_c_consts_9
 from generators import generate9GaussinaNodes
 
+import tkinter as tk
+
 from mge_related import *
 
 from f_vector import create_f_vector
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
+def submit_form():
+    # Get values from entry fields
+    poisson = poisson_entry.get()
+    jung = jung_entry.get()
+
+    # Do something with the form values (e.g., process data, perform calculations)
+
+    # Print the form values as an example
+    # print("x_size:", x_size)
+    print("poisson:", poisson)
+    print("jung:", jung)
+
+root = tk.Tk()
+root.geometry("300x450")
+root.grid_columnconfigure(1, weight=1)
+
+geometry_section_label = tk.Label(root, text="Geometry", font=("Arial", 16))
+
+sizes_label = tk.Label(root, text="x y z sizes", font=("Arial", 12))
+partitions_label = tk.Label(root, text="x y z parts", font=("Arial", 12))
+
+material_label = tk.Label(root, text="Material properties", font=("Arial", 16))
+poisson_label = tk.Label(root, text="Poisson", font=("Arial", 12))
+jung_label = tk.Label(root, text="Jung", font=("Arial", 12))
+
+pressure_label = tk.Label(root, text="Pressure properties", font=("Arial", 16))
+
+zp_label = tk.Label(root, text="ZP", font=("Arial", 14))
+zp_cubes_label = tk.Label(root, text="cube", font=("Arial", 12))
+zp_side_label = tk.Label(root, text="side", font=("Arial", 12))
+zp_power_label = tk.Label(root, text="power", font=("Arial", 12))
+
+zu_label = tk.Label(root, text="ZU", font=("Arial", 14))
+zu_cubes_label = tk.Label(root, text="cube", font=("Arial", 12))
+zu_side_label = tk.Label(root, text="side", font=("Arial", 12))
+
+
+sizes_entry = tk.Entry(root, width=20)
+partitions_entry = tk.Entry(root, width=20)
+
+poisson_entry = tk.Entry(root, width=20)
+jung_entry = tk.Entry(root, width=20)
+
+zp_cubes_entry = tk.Entry(root, width=20)
+zp_side_entry = tk.Entry(root, width=20)
+zp_power_entry = tk.Entry(root, width=20)
+
+zu_cubes_entry = tk.Entry(root, width=20)
+zu_side_entry = tk.Entry(root, width=20)
+
+geometry_section_label.grid(row=0, column=0, columnspan=2, sticky="ew")
+
+sizes_label.grid(row=1, column=0, sticky="ew")
+sizes_entry.grid(row=1, column=1, sticky="ew", pady=5)
+
+partitions_label.grid(row=2, column=0, sticky="ew")
+partitions_entry.grid(row=2, column=1, sticky="ew", pady=5)
+
+material_label.grid(row=3, column=0, columnspan=2, sticky="ew")
+
+poisson_label.grid(row=4, column=0, sticky="ew")
+poisson_entry.grid(row=4, column=1, sticky="ew", pady=5)
+
+jung_label.grid(row=5, column=0, sticky="ew")
+jung_entry.grid(row=5, column=1, sticky="ew", pady=5)
+
+pressure_label.grid(row=6, column=0, columnspan=2, sticky="ew")
+
+zp_label.grid(row=7, column=0, columnspan=2, sticky="ew")
+zp_cubes_label.grid(row=8, column=0, sticky="ew")
+zp_side_label.grid(row=9, column=0, sticky="ew")
+zp_power_label.grid(row=10, column=0, sticky="ew")
+zp_cubes_entry.grid(row=8, column=1, sticky="ew", pady=5)
+zp_side_entry.grid(row=9, column=1, sticky="ew", pady=5)
+zp_power_entry.grid(row=10, column=1, sticky="ew", pady=5)
+
+zu_label.grid(row=11, column=0, columnspan=2, sticky="ew")
+zu_cubes_label.grid(row=12, column=0, sticky="ew")
+zu_side_label.grid(row=13, column=0, sticky="ew")
+zu_cubes_entry.grid(row=12, column=1, sticky="ew", pady=5)
+zu_side_entry.grid(row=13, column=1, sticky="ew", pady=5)
+
+
+# Create submit button
+submit_button = tk.Button(root, text="Submit", command=submit_form, width=25)
+submit_button.grid(row=14, column=0, columnspan=2, sticky="ew")
+
+root.mainloop()
 
 def fill_container(length, width, height, parts_len, parts_width, parts_height, dictionary):
     res = []
@@ -97,32 +182,8 @@ def fill_container(length, width, height, parts_len, parts_width, parts_height, 
 
 
 def generate_vertices_for_cube(vertices, starting_point, step_x, step_y, step_z, counters, dictionary):
-    current_x_part = counters[0]
-    current_y_part = counters[1]
-
     index = vertices[vertices.index(starting_point)].coords
     indexindex = vertices.index(starting_point)
-
-    # skip_lower_plate = (x_len - current_x_part) * 2 + x_len + 1
-    # skip_entire_lower_plate = (x_len + 1 + 1 + x_len * 2)
-    # skip_entire_middle_plate = x_len + 1
-    #
-    # lower_edge_coeficient = skip_lower_plate + 1 + (current_x_part + 1) * 2
-    # lower_center_right = (x_len - current_x_part) * 2 + current_x_part + 2
-    # lower_center_back = (x_len - current_x_part) * 2 + x_len + 1 + (current_x_part + 1) * 2
-    #
-    # high_edge_coeficient = (x_len - current_x_part) * 2 + skip_entire_lower_plate * (y_len - current_y_part) + x_len + 1 + skip_entire_middle_plate * y_len + 1 + current_x_part * 2 + current_y_part * (x_len * 2 + 1 + x_len + 1)
-    #
-    # central_edge_coeficient_front = (x_len - current_x_part) * 2 + skip_entire_lower_plate * (y_len - current_y_part) + 1 + current_x_part + current_y_part * (x_len + 1)
-    # central_edge_coeficient_back = central_edge_coeficient_front + x_len - current_x_part + 1 + current_x_part
-    #
-    # to_higher = indexindex + high_edge_coeficient
-    #
-    # LE = [indexindex, indexindex + 2, indexindex + lower_edge_coeficient, indexindex + lower_edge_coeficient - 2]
-    # HE = [indexindex + high_edge_coeficient, indexindex + high_edge_coeficient + 2, indexindex + high_edge_coeficient + lower_edge_coeficient, indexindex + high_edge_coeficient + lower_edge_coeficient - 2]
-    # LC = [indexindex + 1, indexindex + lower_center_right, indexindex + lower_center_back, indexindex + lower_center_right - 1]
-    # MC = [indexindex + central_edge_coeficient_front, indexindex + central_edge_coeficient_front + 1, indexindex + central_edge_coeficient_back + 1, indexindex + central_edge_coeficient_back]
-    # HC = [to_higher + 1, to_higher + lower_center_right, to_higher + lower_center_back, to_higher + lower_center_right - 1]
 
     vertice_1 = indexindex
     vertice_2 = dictionary[(index[0] + step_x, index[1], index[2])]
@@ -240,9 +301,6 @@ def tranform_into_arrays(vertices):
     return [array_len, array_wid, array_hei]
 
 
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
     c_consts = generate_c_consts()
@@ -252,20 +310,20 @@ if __name__ == '__main__':
 
     vertice_dictionary = {}
 
-    result = fill_container(2, 1, 2, 2, 1, 2, vertice_dictionary)
+    result = fill_container(10, 10, 10, 2, 1, 2, vertice_dictionary)
 
-    ZP = [[2, 6, -30], [3, 6, -30]]
+    ZP = [[2, 6, -50]]
 
     ZU = []
 
-    # for i in range(4 * 4):
+    # for i in range(3 * 3):
     #     ZU.append([i, 5])
 
     ZU = [[0, 5], [1, 5]]
 
-    cubes = create_cubes(2, 1, 2, 2, 1, 2, result, vertice_dictionary)
+    cubes = create_cubes(10, 10, 10, 2, 1, 2, result, vertice_dictionary)
 
-    outer_sides = get_all_outer_cubes(cubes, 0, 2, 0, 1, 0, 2)
+    outer_sides = get_all_outer_cubes(cubes, 0, 10, 0, 10, 0, 10)
 
     dfiabg = DFIABG()
 
@@ -332,12 +390,8 @@ if __name__ == '__main__':
 
     fixate_side(global_matrix_mg, ZU, cubes)
 
-    # coef = 30
-
     print(len(global_matrix_mg))
     print(len(global_vector_f))
-
-    # final = gauss_elimination(global_matrix_mg, global_vector_f)
 
     final = get_GaussianElimination(global_matrix_mg, global_vector_f)
 
@@ -371,5 +425,3 @@ if __name__ == '__main__':
     ax.set_zlabel('Z')
 
     plt.show()
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/

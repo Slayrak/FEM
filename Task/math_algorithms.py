@@ -1,29 +1,3 @@
-def gauss_elimination(matrix, b, result_matrix):
-    # FORWARD
-
-    for i in range(len(matrix) - 1):
-        for j in range(i + 1, len(matrix)):
-            if matrix[i][i] == 0:
-                return
-            coef = matrix[j][i] / matrix[i][i]
-            for k in range(i, len(matrix[0])):
-                matrix[j][k] = matrix[j][k] - matrix[i][k] * coef
-            b[j] = b[j] - b[i] * coef
-
-    # ======================================================
-
-    # BACKWARD
-
-    res = list(b)
-    for i in range(len(matrix) - 1, -1, -1):
-        for j in range(i + 1, len(matrix)):
-            res[i] -= matrix[i][j] * res[j]
-        if matrix[i][i] == 0:
-            return []
-        res[i] /= matrix[i][i]
-    return res
-
-
 def get_GaussianElimination(matrix, b):
     matrixRows = len(matrix)
     matrixCols = len(matrix[0])
