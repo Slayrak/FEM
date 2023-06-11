@@ -7,7 +7,7 @@ from dfidsomething import *
 
 from dpsid_something import *
 
-from math_algorithms import gauss_elimination
+from math_algorithms import get_GaussianElimination
 
 def getAKT(axes, number_of_vertex, vertices):
     result = 0.0
@@ -74,29 +74,29 @@ def DFIABG():
     gaussnodes = generate27GaussianNodes()
 
     local_vertices = [
-        [-1, -1, -1],
-        [1, -1, -1],
-        [1, 1, -1],
         [-1, 1, -1],
+        [1, 1, -1],
+        [1, -1, -1],
+        [-1, -1, -1],
 
-        [-1, -1, 1],
-        [1, -1, 1],
-        [1, 1, 1],
         [-1, 1, 1],
+        [1, 1, 1],
+        [1, -1, 1],
+        [-1, -1, 1],
 
-        [0, -1, -1],
-        [1, 0, -1],
         [0, 1, -1],
+        [1, 0, -1],
+        [0, -1, -1],
         [-1, 0, -1],
 
-        [-1, -1, 0],
-        [1, -1, 0],
-        [1, 1, 0],
         [-1, 1, 0],
+        [1, 1, 0],
+        [1, -1, 0],
+        [-1, -1, 0],
 
-        [0, -1, 1],
-        [1, 0, 1],
         [0, 1, 1],
+        [1, 0, 1],
+        [0, -1, 1],
         [-1, 0, 1]
 
     ]
@@ -137,7 +137,7 @@ def DFIXYZ(DJ_matrix, DFIABG):
 
     for i in range(27):
         for j in range(20):
-            dfixyz[i][j] = gauss_elimination(DJ_matrix[i], [DFIABG[i][0][j], DFIABG[i][1][j], DFIABG[i][2][j]], [])
+            dfixyz[i][j] = get_GaussianElimination(DJ_matrix[i], [DFIABG[i][0][j], DFIABG[i][1][j], DFIABG[i][2][j]])
 
     return dfixyz
 
@@ -212,11 +212,11 @@ def to_global(global_matrix_mg, global_vector_f, all_mge, all_fe, ZP, cubes):
     for mge in range(len(all_mge)):
         for mge_for_elem_i in range(len(all_mge[0])):
             for mge_for_elem_j in range((len(all_mge[0]))):
-                compx = floor(mge_for_elem_i / 20)
-                compy = floor(mge_for_elem_j / 20)
-                index1 = (cubes[mge].vertices[mge_for_elem_i % 20].outer_number - 1) * 3 + compx
-                index2 = (cubes[mge].vertices[mge_for_elem_j % 20].outer_number - 1) * 3 + compy
-                global_matrix_mg[index1][index2] += all_mge[mge][mge_for_elem_i][mge_for_elem_j]
+                x_or_y_or_z_i = floor(mge_for_elem_i / 20)
+                x_ot_y_or_z_j = floor(mge_for_elem_j / 20)
+                index_1 = (cubes[mge].vertices[mge_for_elem_i % 20].outer_number - 1) * 3 + x_or_y_or_z_i
+                index_2 = (cubes[mge].vertices[mge_for_elem_j % 20].outer_number - 1) * 3 + x_ot_y_or_z_j
+                global_matrix_mg[index_1][index_2] += all_mge[mge][mge_for_elem_i][mge_for_elem_j]
 
     for i in range(len(ZP)):
         for mge_for_elem_i in range(len(all_fe[0])):

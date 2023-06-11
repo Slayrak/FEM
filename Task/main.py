@@ -32,7 +32,7 @@ from f_vector import create_f_vector
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
 
-def fill_container(length, width, height, parts_len, parts_width, parts_height):
+def fill_container(length, width, height, parts_len, parts_width, parts_height, dictionary):
     res = []
 
     vertices = []
@@ -71,6 +71,7 @@ def fill_container(length, width, height, parts_len, parts_width, parts_height):
                     x += step_x / 2
                     continue
                 vertices.append(Vertice(outer_number=outer_number_counter, coords=[x, y, z]))
+                dictionary[(x, y, z)] = outer_number_counter
                 outer_number_counter += 1
                 x += step_x / 2
 
@@ -95,33 +96,64 @@ def fill_container(length, width, height, parts_len, parts_width, parts_height):
     return vertices
 
 
-def generate_vertices_for_cube(vertices, starting_point, x_len, y_len, z_len, counters):
+def generate_vertices_for_cube(vertices, starting_point, step_x, step_y, step_z, counters, dictionary):
     current_x_part = counters[0]
     current_y_part = counters[1]
 
     index = vertices[vertices.index(starting_point)].coords
     indexindex = vertices.index(starting_point)
 
-    skip_lower_plate = (x_len - current_x_part) * 2 + x_len + 1
-    skip_entire_lower_plate = (x_len + 1 + 1 + x_len * 2)
-    skip_entire_middle_plate = x_len + 1
+    # skip_lower_plate = (x_len - current_x_part) * 2 + x_len + 1
+    # skip_entire_lower_plate = (x_len + 1 + 1 + x_len * 2)
+    # skip_entire_middle_plate = x_len + 1
+    #
+    # lower_edge_coeficient = skip_lower_plate + 1 + (current_x_part + 1) * 2
+    # lower_center_right = (x_len - current_x_part) * 2 + current_x_part + 2
+    # lower_center_back = (x_len - current_x_part) * 2 + x_len + 1 + (current_x_part + 1) * 2
+    #
+    # high_edge_coeficient = (x_len - current_x_part) * 2 + skip_entire_lower_plate * (y_len - current_y_part) + x_len + 1 + skip_entire_middle_plate * y_len + 1 + current_x_part * 2 + current_y_part * (x_len * 2 + 1 + x_len + 1)
+    #
+    # central_edge_coeficient_front = (x_len - current_x_part) * 2 + skip_entire_lower_plate * (y_len - current_y_part) + 1 + current_x_part + current_y_part * (x_len + 1)
+    # central_edge_coeficient_back = central_edge_coeficient_front + x_len - current_x_part + 1 + current_x_part
+    #
+    # to_higher = indexindex + high_edge_coeficient
+    #
+    # LE = [indexindex, indexindex + 2, indexindex + lower_edge_coeficient, indexindex + lower_edge_coeficient - 2]
+    # HE = [indexindex + high_edge_coeficient, indexindex + high_edge_coeficient + 2, indexindex + high_edge_coeficient + lower_edge_coeficient, indexindex + high_edge_coeficient + lower_edge_coeficient - 2]
+    # LC = [indexindex + 1, indexindex + lower_center_right, indexindex + lower_center_back, indexindex + lower_center_right - 1]
+    # MC = [indexindex + central_edge_coeficient_front, indexindex + central_edge_coeficient_front + 1, indexindex + central_edge_coeficient_back + 1, indexindex + central_edge_coeficient_back]
+    # HC = [to_higher + 1, to_higher + lower_center_right, to_higher + lower_center_back, to_higher + lower_center_right - 1]
 
-    lower_edge_coeficient = skip_lower_plate + 1 + (current_x_part + 1) * 2
-    lower_center_right = (x_len - current_x_part) * 2 + current_x_part + 2
-    lower_center_back = (x_len - current_x_part) * 2 + x_len + 1 + (current_x_part + 1) * 2
+    vertice_1 = indexindex
+    vertice_2 = dictionary[(index[0] + step_x, index[1], index[2])]
+    vertice_3 = dictionary[(index[0] + step_x, index[1] + step_y, index[2])]
+    vertice_4 = dictionary[(index[0], index[1] + step_y, index[2])]
 
-    high_edge_coeficient = (x_len - current_x_part) * 2 + skip_entire_lower_plate * (y_len - current_y_part) + x_len + 1 + skip_entire_middle_plate * y_len + 1 + current_x_part * 2 + current_y_part * (x_len * 2 + 1 + x_len + 1)
+    vertice_5 = dictionary[(index[0], index[1], index[2] + step_z)]
+    vertice_6 = dictionary[(index[0] + step_x, index[1], index[2] + step_z)]
+    vertice_7 = dictionary[(index[0] + step_x, index[1] + step_y, index[2] + step_z)]
+    vertice_8 = dictionary[(index[0], index[1] + step_y, index[2] + step_z)]
 
-    central_edge_coeficient_front = (x_len - current_x_part) * 2 + skip_entire_lower_plate * (y_len - current_y_part) + 1 + current_x_part + current_y_part * (x_len + 1)
-    central_edge_coeficient_back = central_edge_coeficient_front + x_len - current_x_part + 1 + current_x_part
+    vertice_9 = dictionary[(index[0] + step_x/2, index[1], index[2])]
+    vertice_10 = dictionary[(index[0] + step_x, index[1] + step_y/2, index[2])]
+    vertice_11 = dictionary[(index[0] + step_x/2, index[1] + step_y, index[2])]
+    vertice_12 = dictionary[(index[0], index[1] + step_y/2, index[2])]
 
-    to_higher = indexindex + high_edge_coeficient
+    vertice_13 = dictionary[(index[0], index[1], index[2] + step_z/2)]
+    vertice_14 = dictionary[(index[0] + step_x, index[1], index[2] + step_z/2)]
+    vertice_15 = dictionary[(index[0] + step_x, index[1] + step_y, index[2] + step_z/2)]
+    vertice_16 = dictionary[(index[0], index[1] + step_y, index[2] + step_z/2)]
 
-    LE = [indexindex, indexindex + 2, indexindex + lower_edge_coeficient, indexindex + lower_edge_coeficient - 2]
-    HE = [indexindex + high_edge_coeficient, indexindex + high_edge_coeficient + 2, indexindex + high_edge_coeficient + lower_edge_coeficient, indexindex + high_edge_coeficient + lower_edge_coeficient - 2]
-    LC = [indexindex + 1, indexindex + lower_center_right, indexindex + lower_center_back, indexindex + lower_center_right - 1]
-    MC = [indexindex + central_edge_coeficient_front, indexindex + central_edge_coeficient_front + 1, indexindex + central_edge_coeficient_back + 1, indexindex + central_edge_coeficient_back]
-    HC = [to_higher + 1, to_higher + lower_center_right, to_higher + lower_center_back, to_higher + lower_center_right - 1]
+    vertice_17 = dictionary[(index[0] + step_x / 2, index[1], index[2] + step_z)]
+    vertice_18 = dictionary[(index[0] + step_x, index[1] + step_y / 2, index[2] + step_z)]
+    vertice_19 = dictionary[(index[0] + step_x / 2, index[1] + step_y, index[2] + step_z)]
+    vertice_20 = dictionary[(index[0], index[1] + step_y / 2, index[2] + step_z)]
+
+    LE = [indexindex, vertice_2 - 1, vertice_3 - 1, vertice_4 - 1]
+    HE = [vertice_5 - 1, vertice_6 - 1, vertice_7 - 1, vertice_8 - 1]
+    LC = [vertice_9 - 1, vertice_10 - 1, vertice_11 - 1, vertice_12 - 1]
+    MC = [vertice_13 - 1, vertice_14 - 1, vertice_15 - 1, vertice_16 - 1]
+    HC = [vertice_17 - 1, vertice_18 - 1, vertice_19 - 1, vertice_20 - 1]
 
     result = []
 
@@ -155,7 +187,7 @@ def generate_vertices_for_cube(vertices, starting_point, x_len, y_len, z_len, co
     return result
 
 
-def create_cubes(x_len, y_len, z_len, parts_len, parts_width, parts_height, vertices):
+def create_cubes(x_len, y_len, z_len, parts_len, parts_width, parts_height, vertices, dictionary):
     number_of_cubes = x_len * y_len * z_len
 
     start_cube_pos = 0
@@ -189,7 +221,7 @@ def create_cubes(x_len, y_len, z_len, parts_len, parts_width, parts_height, vert
     cubes = []
 
     for i in range(len(cubes_starting_points)):
-        cube_vertices = generate_vertices_for_cube(vertices, Vertice(outer_number=1, coords=cubes_starting_points[i]), parts_len, parts_width, parts_height, number_of_rows_columns[i])
+        cube_vertices = generate_vertices_for_cube(vertices, Vertice(outer_number=1, coords=cubes_starting_points[i]), step_x, step_y, step_z, number_of_rows_columns[i], dictionary)
         cubes.append(Cube(cube_number=i + 1, vertices=cube_vertices))
 
     return cubes
@@ -218,9 +250,11 @@ if __name__ == '__main__':
 
     gauss_nodes_9 = generate9GaussinaNodes()
 
-    result = fill_container(10, 10, 10, 2, 1, 2)
+    vertice_dictionary = {}
 
-    ZP = [[2, 6, 0], [3, 6, 0]]
+    result = fill_container(2, 1, 2, 2, 1, 2, vertice_dictionary)
+
+    ZP = [[2, 6, -30], [3, 6, -30]]
 
     ZU = []
 
@@ -229,9 +263,9 @@ if __name__ == '__main__':
 
     ZU = [[0, 5], [1, 5]]
 
-    cubes = create_cubes(10, 10, 10, 2, 1, 2, result)
+    cubes = create_cubes(2, 1, 2, 2, 1, 2, result, vertice_dictionary)
 
-    outer_sides = get_all_outer_cubes(cubes, 0, 10, 0, 10, 0, 10)
+    outer_sides = get_all_outer_cubes(cubes, 0, 2, 0, 1, 0, 2)
 
     dfiabg = DFIABG()
 
