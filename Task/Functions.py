@@ -9,6 +9,8 @@ from dpsid_something import *
 
 from math_algorithms import get_GaussianElimination
 
+from numpy import linalg
+
 def getAKT(axes, number_of_vertex, vertices):
     result = 0.0
 
@@ -135,9 +137,9 @@ def DFIXYZ(DJ_matrix, DFIABG):
 
     dfixyz = [[0 for _ in range(20)] for _ in range(27)]
 
-    for i in range(27):
-        for j in range(20):
-            dfixyz[i][j] = get_GaussianElimination(DJ_matrix[i], [DFIABG[i][0][j], DFIABG[i][1][j], DFIABG[i][2][j]])
+    for gauss in range(27):
+        for local_node in range(20):
+            dfixyz[gauss][local_node] = linalg.solve(DJ_matrix[gauss], [DFIABG[gauss][0][local_node], DFIABG[gauss][1][local_node], DFIABG[gauss][2][local_node]])
 
     return dfixyz
 
@@ -208,7 +210,7 @@ def DPSIXYZ(dpsite, finite_element, finite_element_side):
     return dpsixyz
 
 
-def to_global(global_matrix_mg, global_vector_f, all_mge, all_fe, ZP, cubes):
+def tranform_in_global_mg(global_matrix_mg, global_vector_f, all_mge, all_fe, ZP, cubes):
     for mge in range(len(all_mge)):
         for mge_for_elem_i in range(len(all_mge[0])):
             for mge_for_elem_j in range((len(all_mge[0]))):
@@ -220,12 +222,12 @@ def to_global(global_matrix_mg, global_vector_f, all_mge, all_fe, ZP, cubes):
 
     for i in range(len(ZP)):
         for mge_for_elem_i in range(len(all_fe[0])):
-            comp = floor(mge_for_elem_i / 20)
-            index = (cubes[ZP[i][0]].vertices[mge_for_elem_i % 20].outer_number - 1) * 3 + comp
+            x_or_y_or_z_i = floor(mge_for_elem_i / 20)
+            index = (cubes[ZP[i][0]].vertices[mge_for_elem_i % 20].outer_number - 1) * 3 + x_or_y_or_z_i
             global_vector_f[index] += all_fe[i][mge_for_elem_i]
 
 
-def fixate_side(global_matrix_mg, ZU, cubes):
+def glue_side(global_matrix_mg, ZU, cubes):
 
     for i in range(len(ZU)):
         side_vertices = getZU(cubes[ZU[i][0]], ZU[i][1])

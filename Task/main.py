@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import linalg
 import matplotlib.pyplot as plt
 
 from Cube import Cube
@@ -11,8 +11,8 @@ from Functions import DFIABG
 from Functions import DFIXYZ
 from Functions import DPSITE
 from Functions import DPSIXYZ
-from Functions import to_global
-from Functions import fixate_side
+from Functions import tranform_in_global_mg
+from Functions import glue_side
 
 from visualisation import get_all_outer_cubes
 from visualisation import get_cubes_side_vertices
@@ -28,94 +28,6 @@ from mge_related import *
 
 from f_vector import create_f_vector
 
-def submit_form():
-    # Get values from entry fields
-    poisson = poisson_entry.get()
-    jung = jung_entry.get()
-
-    # Do something with the form values (e.g., process data, perform calculations)
-
-    # Print the form values as an example
-    # print("x_size:", x_size)
-    print("poisson:", poisson)
-    print("jung:", jung)
-
-root = tk.Tk()
-root.geometry("300x450")
-root.grid_columnconfigure(1, weight=1)
-
-geometry_section_label = tk.Label(root, text="Geometry", font=("Arial", 16))
-
-sizes_label = tk.Label(root, text="x y z sizes", font=("Arial", 12))
-partitions_label = tk.Label(root, text="x y z parts", font=("Arial", 12))
-
-material_label = tk.Label(root, text="Material properties", font=("Arial", 16))
-poisson_label = tk.Label(root, text="Poisson", font=("Arial", 12))
-jung_label = tk.Label(root, text="Jung", font=("Arial", 12))
-
-pressure_label = tk.Label(root, text="Pressure properties", font=("Arial", 16))
-
-zp_label = tk.Label(root, text="ZP", font=("Arial", 14))
-zp_cubes_label = tk.Label(root, text="cube", font=("Arial", 12))
-zp_side_label = tk.Label(root, text="side", font=("Arial", 12))
-zp_power_label = tk.Label(root, text="power", font=("Arial", 12))
-
-zu_label = tk.Label(root, text="ZU", font=("Arial", 14))
-zu_cubes_label = tk.Label(root, text="cube", font=("Arial", 12))
-zu_side_label = tk.Label(root, text="side", font=("Arial", 12))
-
-
-sizes_entry = tk.Entry(root, width=20)
-partitions_entry = tk.Entry(root, width=20)
-
-poisson_entry = tk.Entry(root, width=20)
-jung_entry = tk.Entry(root, width=20)
-
-zp_cubes_entry = tk.Entry(root, width=20)
-zp_side_entry = tk.Entry(root, width=20)
-zp_power_entry = tk.Entry(root, width=20)
-
-zu_cubes_entry = tk.Entry(root, width=20)
-zu_side_entry = tk.Entry(root, width=20)
-
-geometry_section_label.grid(row=0, column=0, columnspan=2, sticky="ew")
-
-sizes_label.grid(row=1, column=0, sticky="ew")
-sizes_entry.grid(row=1, column=1, sticky="ew", pady=5)
-
-partitions_label.grid(row=2, column=0, sticky="ew")
-partitions_entry.grid(row=2, column=1, sticky="ew", pady=5)
-
-material_label.grid(row=3, column=0, columnspan=2, sticky="ew")
-
-poisson_label.grid(row=4, column=0, sticky="ew")
-poisson_entry.grid(row=4, column=1, sticky="ew", pady=5)
-
-jung_label.grid(row=5, column=0, sticky="ew")
-jung_entry.grid(row=5, column=1, sticky="ew", pady=5)
-
-pressure_label.grid(row=6, column=0, columnspan=2, sticky="ew")
-
-zp_label.grid(row=7, column=0, columnspan=2, sticky="ew")
-zp_cubes_label.grid(row=8, column=0, sticky="ew")
-zp_side_label.grid(row=9, column=0, sticky="ew")
-zp_power_label.grid(row=10, column=0, sticky="ew")
-zp_cubes_entry.grid(row=8, column=1, sticky="ew", pady=5)
-zp_side_entry.grid(row=9, column=1, sticky="ew", pady=5)
-zp_power_entry.grid(row=10, column=1, sticky="ew", pady=5)
-
-zu_label.grid(row=11, column=0, columnspan=2, sticky="ew")
-zu_cubes_label.grid(row=12, column=0, sticky="ew")
-zu_side_label.grid(row=13, column=0, sticky="ew")
-zu_cubes_entry.grid(row=12, column=1, sticky="ew", pady=5)
-zu_side_entry.grid(row=13, column=1, sticky="ew", pady=5)
-
-
-# Create submit button
-submit_button = tk.Button(root, text="Submit", command=submit_form, width=25)
-submit_button.grid(row=14, column=0, columnspan=2, sticky="ew")
-
-root.mainloop()
 
 def fill_container(length, width, height, parts_len, parts_width, parts_height, dictionary):
     res = []
@@ -301,7 +213,34 @@ def tranform_into_arrays(vertices):
     return [array_len, array_wid, array_hei]
 
 
-if __name__ == '__main__':
+def submit_form():
+
+    sizes_stringval = sizes_entry.get().split()
+    partitions_stringval = partitions_entry.get().split()
+
+    poisson = float(poisson_entry.get())
+    jung = float(jung_entry.get())
+
+    zp_cubes_stringval = zp_cubes_entry.get().split()
+    zp_side_stringval = zp_side_entry.get().split()
+    zp_power_stringval = zp_power_entry.get().split()
+
+    zu_cubes_stringval = zu_cubes_entry.get().split()
+    zu_side_stringval = zu_side_entry.get().split()
+
+    ZP = []
+    ZU = []
+
+    sizes = [float(num) for num in sizes_stringval]
+    partitions = [int(num) for num in partitions_stringval]
+
+    for num in range(len(zp_cubes_stringval)):
+        ZP.append([int(zp_cubes_stringval[num]), int(zp_side_stringval[num]), float(zp_power_stringval[num])])
+
+    for num in range(len(zu_side_stringval)):
+        ZU.append([int(zu_cubes_stringval[num]), int(zu_side_stringval[num])])
+
+# ====================================================================== START
 
     c_consts = generate_c_consts()
     c_consts_9 = generate_c_consts_9()
@@ -310,24 +249,22 @@ if __name__ == '__main__':
 
     vertice_dictionary = {}
 
-    result = fill_container(10, 10, 10, 2, 1, 2, vertice_dictionary)
+    result = fill_container(sizes[0], sizes[1], sizes[2], partitions[0], partitions[1], partitions[2], vertice_dictionary)
 
-    ZP = [[2, 6, -50]]
-
-    ZU = []
+    # ZP = [[2, 6, -50]]
+    #
+    # ZU = []
 
     # for i in range(3 * 3):
     #     ZU.append([i, 5])
 
-    ZU = [[0, 5], [1, 5]]
+    # ZU = [[0, 5], [1, 5]]
 
-    cubes = create_cubes(10, 10, 10, 2, 1, 2, result, vertice_dictionary)
+    cubes = create_cubes(sizes[0], sizes[1], sizes[2], partitions[0], partitions[1], partitions[2], result, vertice_dictionary)
 
-    outer_sides = get_all_outer_cubes(cubes, 0, 10, 0, 10, 0, 10)
+    outer_sides = get_all_outer_cubes(cubes, 0, sizes[0], 0, sizes[1], 0, sizes[2])
 
     dfiabg = DFIABG()
-
-    ng = 3 * (cubes[0].vertices[6].outer_number - cubes[0].vertices[0].outer_number + 1)
 
     DJ_all = []
 
@@ -345,7 +282,6 @@ if __name__ == '__main__':
         for gauss_node in range(27):
             all_determinants[matrix][gauss_node] = get_determinant(DJ_all[matrix][gauss_node])
 
-
     a11_all = []
     a12_all = []
     a13_all = []
@@ -354,18 +290,18 @@ if __name__ == '__main__':
     a33_all = []
 
     for cube in range(len(cubes)):
-        a11_all.append(create_a11(c_consts, [], dfixyz_all, all_determinants, cube))
-        a12_all.append(create_a12(c_consts, [], dfixyz_all, all_determinants, cube))
-        a13_all.append(create_a13(c_consts, [], dfixyz_all, all_determinants, cube))
-        a22_all.append(create_a22(c_consts, [], dfixyz_all, all_determinants, cube))
-        a23_all.append(create_a23(c_consts, [], dfixyz_all, all_determinants, cube))
-        a33_all.append(create_a33(c_consts, [], dfixyz_all, all_determinants, cube))
-
+        a11_all.append(create_a11(c_consts, [], dfixyz_all, all_determinants, cube, poisson, jung))
+        a12_all.append(create_a12(c_consts, [], dfixyz_all, all_determinants, cube, poisson, jung))
+        a13_all.append(create_a13(c_consts, [], dfixyz_all, all_determinants, cube, poisson, jung))
+        a22_all.append(create_a22(c_consts, [], dfixyz_all, all_determinants, cube, poisson, jung))
+        a23_all.append(create_a23(c_consts, [], dfixyz_all, all_determinants, cube, poisson, jung))
+        a33_all.append(create_a33(c_consts, [], dfixyz_all, all_determinants, cube, poisson, jung))
 
     mge_all = []
 
     for cube in range(len(cubes)):
-        mge_all.append(create_mge(a11_all[cube], a12_all[cube], a13_all[cube], a22_all[cube], a23_all[cube], a33_all[cube]))
+        mge_all.append(
+            create_mge(a11_all[cube], a12_all[cube], a13_all[cube], a22_all[cube], a23_all[cube], a33_all[cube]))
 
     dpsite = DPSITE()
 
@@ -384,24 +320,21 @@ if __name__ == '__main__':
 
     global_vector_f = [0 for _ in range(len(result) * 3)]
 
-    to_global(global_matrix_mg, global_vector_f, mge_all, fe_all, ZP, cubes)
+    tranform_in_global_mg(global_matrix_mg, global_vector_f, mge_all, fe_all, ZP, cubes)
 
     print(global_vector_f[114])
 
-    fixate_side(global_matrix_mg, ZU, cubes)
+    glue_side(global_matrix_mg, ZU, cubes)
 
     print(len(global_matrix_mg))
     print(len(global_vector_f))
 
-    final = get_GaussianElimination(global_matrix_mg, global_vector_f)
+    final = linalg.solve(global_matrix_mg, global_vector_f)
 
     for i in range(len(result)):
         result[i].coords[0] += final[i * 3]
         result[i].coords[1] += final[i * 3 + 1]
         result[i].coords[2] += final[i * 3 + 2]
-
-
-    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     cube_vertices = []
 
@@ -425,3 +358,82 @@ if __name__ == '__main__':
     ax.set_zlabel('Z')
 
     plt.show()
+
+
+
+root = tk.Tk()
+root.geometry("300x450")
+root.grid_columnconfigure(1, weight=1)
+
+geometry_section_label = tk.Label(root, text="Geometry", font=("Arial", 16))
+
+sizes_label = tk.Label(root, text="x y z sizes", font=("Arial", 12))
+partitions_label = tk.Label(root, text="x y z parts", font=("Arial", 12))
+
+material_label = tk.Label(root, text="Material properties", font=("Arial", 16))
+poisson_label = tk.Label(root, text="Poisson", font=("Arial", 12))
+jung_label = tk.Label(root, text="Jung", font=("Arial", 12))
+
+pressure_label = tk.Label(root, text="Pressure properties", font=("Arial", 16))
+
+zp_label = tk.Label(root, text="ZP", font=("Arial", 14))
+zp_cubes_label = tk.Label(root, text="cube", font=("Arial", 12))
+zp_side_label = tk.Label(root, text="side", font=("Arial", 12))
+zp_power_label = tk.Label(root, text="power", font=("Arial", 12))
+
+zu_label = tk.Label(root, text="ZU", font=("Arial", 14))
+zu_cubes_label = tk.Label(root, text="cube", font=("Arial", 12))
+zu_side_label = tk.Label(root, text="side", font=("Arial", 12))
+
+
+sizes_entry = tk.Entry(root, width=20)
+partitions_entry = tk.Entry(root, width=20)
+
+poisson_entry = tk.Entry(root, width=20)
+jung_entry = tk.Entry(root, width=20)
+
+zp_cubes_entry = tk.Entry(root, width=20)
+zp_side_entry = tk.Entry(root, width=20)
+zp_power_entry = tk.Entry(root, width=20)
+
+zu_cubes_entry = tk.Entry(root, width=20)
+zu_side_entry = tk.Entry(root, width=20)
+
+geometry_section_label.grid(row=0, column=0, columnspan=2, sticky="ew")
+
+sizes_label.grid(row=1, column=0, sticky="ew")
+sizes_entry.grid(row=1, column=1, sticky="ew", pady=5)
+
+partitions_label.grid(row=2, column=0, sticky="ew")
+partitions_entry.grid(row=2, column=1, sticky="ew", pady=5)
+
+material_label.grid(row=3, column=0, columnspan=2, sticky="ew")
+
+poisson_label.grid(row=4, column=0, sticky="ew")
+poisson_entry.grid(row=4, column=1, sticky="ew", pady=5)
+
+jung_label.grid(row=5, column=0, sticky="ew")
+jung_entry.grid(row=5, column=1, sticky="ew", pady=5)
+
+pressure_label.grid(row=6, column=0, columnspan=2, sticky="ew")
+
+zp_label.grid(row=7, column=0, columnspan=2, sticky="ew")
+zp_cubes_label.grid(row=8, column=0, sticky="ew")
+zp_side_label.grid(row=9, column=0, sticky="ew")
+zp_power_label.grid(row=10, column=0, sticky="ew")
+zp_cubes_entry.grid(row=8, column=1, sticky="ew", pady=5)
+zp_side_entry.grid(row=9, column=1, sticky="ew", pady=5)
+zp_power_entry.grid(row=10, column=1, sticky="ew", pady=5)
+
+zu_label.grid(row=11, column=0, columnspan=2, sticky="ew")
+zu_cubes_label.grid(row=12, column=0, sticky="ew")
+zu_side_label.grid(row=13, column=0, sticky="ew")
+zu_cubes_entry.grid(row=12, column=1, sticky="ew", pady=5)
+zu_side_entry.grid(row=13, column=1, sticky="ew", pady=5)
+
+
+# Create submit button
+submit_button = tk.Button(root, text="Submit", command=submit_form, width=25)
+submit_button.grid(row=14, column=0, columnspan=2, sticky="ew")
+
+root.mainloop()
